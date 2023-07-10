@@ -3177,6 +3177,12 @@ public:
     /// Whether the parameter is marked '@noDerivative'.
     bool isNoDerivative() const { return Flags.isNoDerivative(); }
 
+    /// Whether the parameter might be a semantic result. This includes
+    /// inout parameters
+    bool isSemanticResult() const {
+      return isInOut();
+    }
+
     ValueOwnership getValueOwnership() const {
       return Flags.getValueOwnership();
     }
@@ -4082,6 +4088,9 @@ public:
     return getConvention() == ParameterConvention::Indirect_Inout
         || getConvention() == ParameterConvention::Indirect_InoutAliasable;
   }
+  bool isSemanticResult() const {
+    return isIndirectMutating();
+  }
 
   bool isPack() const {
     return isPackParameter(getConvention());
@@ -4814,6 +4823,36 @@ public:
   /// Returns the number of indirect mutating parameters.
   unsigned getNumIndirectMutatingParameters() const {
     return llvm::count_if(getParameters(), IndirectMutatingParameterFilter());
+  }
+
+  struct SemanticResultsParameterFilter {
+    bool operator()(SILParameterInfo param) const {
+      return param.isSemanticResult();
+    }
+  };
+
+  using SemanticResultsParameterIter =
+    llvm::filter_iterator<const SILParameterInfo *,
+                          SemanticResultsParameterFilter>;
+  using SemanticResultsParameterRange =
+      iterator_range<SemanticResultsParameterIter>;
+
+  /// A range of SILParameterInfo for all semantic results parameters.
+  SemanticResultsParameterRange getSemanticResultsParameters() const {
+    return llvm::make_filter_range(getParameters(),
+                                   SemanticResultsParameterFilter());
+  }
+
+  /// Returns the number of semantic results parameters.
+  unsigned getNumSemanticResultsParameters() const {
+    return llvm::count_if(getParameters(), SemanticResultsParameterFilter());
+  }
+
+  /// Returns the number of function potential semantic results:
+  ///  * Usual results
+  ///  * Inout parameters
+  unsigned getNumSemanticResults() const {
+    return getNumResults() + getNumSemanticResultsParameters();
   }
 
   /// Get the generic signature that the component types are specified

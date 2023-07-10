@@ -681,6 +681,18 @@ public:
     llvm_unreachable("invalid apply kind");
   }
 
+  SemanticResultArgumentRange getSemanticResultArguments() const {
+    switch (getKind()) {
+    case FullApplySiteKind::ApplyInst:
+      return cast<ApplyInst>(getInstruction())->getSemanticResultArguments();
+    case FullApplySiteKind::TryApplyInst:
+      return cast<TryApplyInst>(getInstruction())->getSemanticResultArguments();
+    case FullApplySiteKind::BeginApplyInst:
+      return cast<BeginApplyInst>(getInstruction())->getSemanticResultArguments();
+    }
+    llvm_unreachable("invalid apply kind");
+  }
+
   /// Returns true if \p op is the callee operand of this apply site
   /// and not an argument operand.
   bool isCalleeOperand(const Operand &op) const {

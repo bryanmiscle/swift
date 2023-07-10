@@ -5576,9 +5576,9 @@ AnyFunctionType::getAutoDiffDerivativeFunctionLinearMapType(
         this, DerivativeFunctionTypeError::Kind::NonDifferentiableResult,
         std::make_pair(originalResultType, unsigned(originalResult.index)));
 
-    if (!originalResult.isInout)
+    if (!originalResult.isSemanticResultParameter)
       resultTanTypes.push_back(resultTan->getType());
-    else if (originalResult.isInout && !originalResult.isWrtParam)
+    else if (originalResult.isSemanticResultParameter && !originalResult.isWrtParam)
       inoutTanTypes.push_back(resultTan->getType());
   }
 
@@ -5668,7 +5668,7 @@ AnyFunctionType::getAutoDiffDerivativeFunctionLinearMapType(
                 NonDifferentiableDifferentiabilityParameter,
             std::make_pair(paramType, i));
 
-      if (diffParam.isInOut()) {
+      if (diffParam.isSemanticResult()) {
         if (paramType->isVoid())
           continue;
         inoutParams.push_back(diffParam);
@@ -5708,6 +5708,7 @@ AnyFunctionType::getAutoDiffDerivativeFunctionLinearMapType(
     break;
   }
   }
+
   assert(linearMapType && "Expected linear map type");
   return linearMapType;
 }
